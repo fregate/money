@@ -2,7 +2,7 @@
 
 Class for math with money
 
-![example workflow](https://github.com/fregate/money/actions/workflows/flutter.yaml/badge.svg)
+![example workflow](https://github.com/fregate/money/actions/workflows/flutter.yml/badge.svg)
 
 ## Getting Started
 
