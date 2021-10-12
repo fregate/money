@@ -41,6 +41,10 @@ import 'dart:math';
 /// Full example: p#.@@ == 0.00; (1.23); (1234.56); 1234567.80
 /// Full example: s#,###.?@@ == 0; -1.23; -1234.56; 1234567.80
 /// Full example: s#,###.@@? == 0; -1.23; -1234.56; 1234567.8
+///
+/// Default sign for decimal separator is period (.) -- todo get it from locale
+/// If thousand separator specified as period (.) -- or , from locale
+/// and decimal separator not (default use) - formatter will use different decimal separator (, or . accordingly)
 
 class MoneyFormatParseError extends ArgumentError {
   MoneyFormatParseError(String pattern, [String name = "", String message = ""])
@@ -85,7 +89,7 @@ class MoneyFormatter {
     integral = integral.abs();
 
     String integralPart = "";
-    if (_thousandsSeparator.isNotEmpty) {
+    if (integral != 0 && _thousandsSeparator.isNotEmpty) {
       int separator = 3;
       while (integral > 0) {
         integralPart += (integral % 10).toString();
@@ -107,21 +111,21 @@ class MoneyFormatter {
       print("warning: decimal part longer than 4 digits - truncated");
       while (decimal > 9999) decimal ~/= 10;
     }
+
+    final reduceDecimal = (int d) {
+      while (d > pow(10, _decimalPlaces) - 1) d ~/= 10; // TODO rounding?
+      return d;
+    };
+
     String decimalPart = "";
     if (_decimalsMandatory == _Decimals.Mandatory ||
         (_decimalsMandatory == _Decimals.NotMandatory && decimal != 0)) {
-      while (decimal > pow(10, _decimalPlaces) - 1)
-        decimal ~/= 10; // TODO rounding?
-
-      decimalPart =
-          _decimalSeparator + decimal.toString().padRight(_decimalPlaces, '0');
+      decimalPart = _decimalSeparator +
+          reduceDecimal(decimal).toString().padRight(_decimalPlaces, '0');
     } else if (decimal == 0) {
       // nothing to add - just print integral part
     } else if (_decimalsMandatory == _Decimals.MandatorySignificantOnly) {
-      while (decimal > pow(10, _decimalPlaces) - 1)
-        decimal ~/= 10; // TODO rounding?
-
-      decimalPart = _decimalSeparator + decimal.toString();
+      decimalPart = _decimalSeparator + reduceDecimal(decimal).toString();
     } else {
       print("whats here? $integral . $decimal");
     }
@@ -150,11 +154,16 @@ class MoneyFormatter {
       throw MoneyFormatParseError(
           pattern, "pattern", "not enough parsing groups");
 
+    // debug
+    // print(pattern);
+    // for (var i = 0; i < match.groupCount + 1; i++) {
+    //   print("$i: ${match.group(i)}");
+    // }
+
     // Decimal separator
     var decimalSeparator = match.group(6);
-    if (decimalSeparator == null)
-      decimalSeparator = "."; // TODO get from locale
-    _decimalSeparator = decimalSeparator;
+    if (decimalSeparator == null || decimalSeparator.isEmpty)
+      decimalSeparator = ".,";
 
     // Decimal places
     final decimals = match.group(8);
@@ -162,25 +171,33 @@ class MoneyFormatter {
         (decimals == null || decimals.isEmpty) ? 2 : decimals.length;
 
     // Decimal padding
-    var decimalPart = match.group(6);
-    if (decimalPart == null) decimalPart = "";
-    var significantOnly = match.group(9);
-    if (significantOnly == null) significantOnly = "";
-    if (significantOnly.isNotEmpty && decimalPart.isNotEmpty)
+    var decimalPartPadding = match.group(7);
+    if (decimalPartPadding == null) decimalPartPadding = "";
+    var significantOnlyPadding = match.group(9);
+    if (significantOnlyPadding == null) significantOnlyPadding = "";
+    if (significantOnlyPadding.isNotEmpty && decimalPartPadding.isNotEmpty)
       throw MoneyFormatParseError(
           pattern, "pattern", "error: 2 padding operators '?' in pattern");
     else
-      _decimalsMandatory = significantOnly.isNotEmpty
+      _decimalsMandatory = significantOnlyPadding.isNotEmpty
           ? _Decimals.MandatorySignificantOnly
-          : decimalPart.isNotEmpty
+          : decimalPartPadding.isNotEmpty
               ? _Decimals.NotMandatory
               : _Decimals.Mandatory;
 
     // Thousands separator
     var thousandSeparator = match.group(3);
     if (thousandSeparator == null) thousandSeparator = "";
-    _thousandsSeparator = thousandSeparator;
+    _thousandsSeparator = thousandSeparator.replaceAll("#", "");
 
+    if (decimalSeparator.length > 1) {
+      if (_thousandsSeparator.contains(RegExp(r'[,.]')))
+        decimalSeparator = decimalSeparator.replaceAll(_thousandsSeparator, "");
+      else
+        decimalSeparator = "."; // TODO get it from locale
+    }
+
+    _decimalSeparator = decimalSeparator;
     if (_thousandsSeparator == _decimalSeparator)
       throw MoneyFormatParseError(pattern, "pattern",
           "thousand '$_thousandsSeparator' and decimal '$_decimalSeparator' separators are equal");
