@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:money/formatter.dart';
+
 class InfiniteDoubleParseError extends ArgumentError {
   InfiniteDoubleParseError(num value, [String name = "", String message = ""])
       : super.value(value, name, message);
@@ -15,9 +17,13 @@ class Money {
   static const _maxDecimalPlaces = 4;
   static const _e10 = 10000;
 
-  Money(Money m) : _amount = m._amount;
+  Money(Money m, {MoneyFormatter? formatter})
+      : _amount = m._amount,
+        _formatter = formatter ??
+            MoneyFormatter("#"); // TODO parse format from locale formatter for numbers and currency
 
-  Money.parse(Object value) {
+  Money.parse(Object value, {MoneyFormatter? formatter})
+      : _formatter = formatter ?? MoneyFormatter("#") {
     if (value is double) {
       if (value.isInfinite)
         throw InfiniteDoubleParseError(
@@ -50,7 +56,9 @@ class Money {
         "invalid value ${value.runtimeType}: ${value.toString()}");
   }
 
-  Money._raw(int amount) : _amount = amount;
+  Money._raw(int amount, {MoneyFormatter? formatter})
+      : _amount = amount,
+        _formatter = formatter ?? MoneyFormatter("#");
 
   /// Compares this to `other`.
   ///
@@ -140,7 +148,11 @@ class Money {
   }
 
   static Money? tryParse(Object other) {
-    if (other is num) return Money.parse(other);
+    try {
+      if (other is num) return Money.parse(other);
+    } catch (e) {
+      return null;
+    }
 
     if (other is Money) return other;
 
@@ -156,11 +168,16 @@ class Money {
   }
 
   double get value => _amount.toDouble() / _e10;
+  int get raw => _amount;
+
+  set formatter(MoneyFormatter formatter) => _formatter = formatter;
+
+  int get _integral => _amount ~/ _e10;
+  int get _decimal => _amount.remainder(_e10).abs();
 
   @override
   String toString() {
-    // TODO format from locale formatter currency
-    return "${_amount ~/ _e10}.${_amount % _e10}";
+    return _formatter.format(_integral, _decimal);
   }
 
   @override
@@ -170,7 +187,6 @@ class Money {
 
   /// Parse Money from string
   /// \throws FormatException for invalid string (allowed symbols are digits, decimal part separator and sign '-/+')
-  // TODO parse format from locale formatter for numbers and currency
   static Money _parse(String value) {
     value = value.trim();
     if (value.isEmpty) return Money.zero;
@@ -197,6 +213,7 @@ class Money {
 
   // immutable value
   late final int _amount;
+  MoneyFormatter _formatter;
 
   static Money get zero => Money._raw(0);
 }

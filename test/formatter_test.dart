@@ -4,6 +4,7 @@ import 'package:money/formatter.dart';
 void main() {
   group('Parse pattern', () {
     test('Empty pattern', () {
+      final f = MoneyFormatter("#");
       expect(() => MoneyFormatter(""), throwsA(isA<Error>()));
     });
 

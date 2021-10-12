@@ -81,6 +81,9 @@ class MoneyFormatter {
     _parse();
   }
 
+  // TODO make formatter from locale
+  // MoneyFormatter.locale(String locale);
+
   String format(int integral, int decimal) {
     if (decimal < 0)
       throw ArgumentError.value(decimal, "decimal", "negative decimal");
