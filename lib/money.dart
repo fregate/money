@@ -17,12 +17,13 @@ class Money {
   static const _maxDecimalPlaces = 4;
   static const _e10 = 10000;
 
-  Money(Money m, {MoneyFormatter? formatter})
-      : amount = m.amount,
+  // create from raw value (X * 10^4) - use only for deserialization (eg DB)
+  Money.raw(int value, {MoneyFormatter? formatter})
+      : _amount = value,
         _formatter = formatter ??
             MoneyFormatter("#"); // TODO parse format from locale formatter for numbers and currency
 
-  Money.parse(Object value, {MoneyFormatter? formatter})
+  Money(Object value, {MoneyFormatter? formatter})
       : _formatter = formatter ?? MoneyFormatter("#") {
     if (value is double) {
       if (value.isInfinite)
@@ -33,22 +34,22 @@ class Money {
         throw NanDoubleParseError(
             "value", "${value.runtimeType}: ${value.toString()}");
 
-      amount = (value * _e10).round();
+      _amount = (value * _e10).round();
       return;
     }
 
     if (value is int && value.isFinite && !value.isNaN) {
-      amount = value.toInt() * _e10;
+      _amount = value.toInt() * _e10;
       return;
     }
 
     if (value is String) {
-      amount = _parse(value).amount;
+      _amount = _parse(value)._amount;
       return;
     }
 
     if (value is Money) {
-      amount = value.amount;
+      _amount = value._amount;
       return;
     }
 
@@ -56,18 +57,14 @@ class Money {
         "invalid value ${value.runtimeType}: ${value.toString()}");
   }
 
-  Money._raw(int value, {MoneyFormatter? formatter})
-      : amount = value,
-        _formatter = formatter ?? MoneyFormatter("#");
-
   /// Compares this to `other`.
   ///
   /// Returns a negative number if `this` is less than `other`, zero if they are
   /// equal, and a positive number if `this` is greater than `other`.
   int compareTo(Object other) {
     try {
-      final m = Money.parse(other);
-      return amount - m.amount;
+      final m = Money(other);
+      return _amount - m._amount;
     } on InfiniteDoubleParseError catch (e) {
       return e.invalidValue > 0 ? -1 : 1;
     }
@@ -76,8 +73,8 @@ class Money {
   @override
   bool operator ==(Object other) {
     try {
-      final m = Money.parse(other);
-      return m.amount == amount;
+      final m = Money(other);
+      return m._amount == _amount;
     } on InfiniteDoubleParseError {
       return false;
     } on NanDoubleParseError {
@@ -87,8 +84,8 @@ class Money {
 
   bool operator >(Object other) {
     try {
-      final m = Money.parse(other);
-      return amount > m.amount;
+      final m = Money(other);
+      return _amount > m._amount;
     } on InfiniteDoubleParseError catch (e) {
       return e.invalidValue.isNegative;
     }
@@ -96,8 +93,8 @@ class Money {
 
   bool operator >=(Object other) {
     try {
-      final m = Money.parse(other);
-      return amount >= m.amount;
+      final m = Money(other);
+      return _amount >= m._amount;
     } on InfiniteDoubleParseError catch (e) {
       return e.invalidValue.isNegative;
     }
@@ -105,8 +102,8 @@ class Money {
 
   bool operator <(Object other) {
     try {
-      final m = Money.parse(other);
-      return amount < m.amount;
+      final m = Money(other);
+      return _amount < m._amount;
     } on InfiniteDoubleParseError catch (e) {
       return !e.invalidValue.isNegative;
     }
@@ -114,21 +111,21 @@ class Money {
 
   bool operator <=(Object other) {
     try {
-      final m = Money.parse(other);
-      return amount <= m.amount;
+      final m = Money(other);
+      return _amount <= m._amount;
     } on InfiniteDoubleParseError catch (e) {
       return !e.invalidValue.isNegative;
     }
   }
 
   Money operator +(Object other) {
-    final m = Money.parse(other);
-    return Money._raw(this.amount + m.amount);
+    final m = Money(other);
+    return Money.raw(this._amount + m._amount);
   }
 
   Money operator -(Object other) {
-    final m = Money.parse(other);
-    return Money._raw(this.amount - m.amount);
+    final m = Money(other);
+    return Money.raw(this._amount - m._amount);
   }
 
   // You can't multiplicate or divide money on money, so cast to numbers
@@ -136,7 +133,7 @@ class Money {
     num ratio = num.parse(ratioObject.toString());
     if (ratio.isNaN) throw NanDoubleParseError("ratioObject");
     if (ratio.isInfinite) throw InfiniteDoubleParseError(ratio, "ratioObject");
-    return Money._raw((this.amount * ratio).round());
+    return Money.raw((this._amount * ratio).round());
   }
 
   Money operator /(Object ratioObject) {
@@ -144,12 +141,12 @@ class Money {
     if (ratio == 0) throw ArgumentError("try to divide by zero");
     if (ratio.isNaN) throw NanDoubleParseError("ratioObject");
     if (ratio.isInfinite) throw InfiniteDoubleParseError(ratio, "ratioObject");
-    return Money._raw((this.amount / ratio).round());
+    return Money.raw((this._amount / ratio).round());
   }
 
   static Money? tryParse(Object other) {
     try {
-      if (other is num) return Money.parse(other);
+      if (other is num) return Money(other);
     } catch (e) {
       return null;
     }
@@ -167,12 +164,13 @@ class Money {
     return null;
   }
 
-  double get value => amount.toDouble() / _e10;
+  double get value => _amount.toDouble() / _e10;
+  int get raw => _amount;
 
   set formatter(MoneyFormatter formatter) => _formatter = formatter;
 
-  int get _integral => amount ~/ _e10;
-  int get _decimal => amount.remainder(_e10).abs();
+  int get _integral => _amount ~/ _e10;
+  int get _decimal => _amount.remainder(_e10).abs();
 
   @override
   String toString() {
@@ -181,7 +179,7 @@ class Money {
 
   @override
   int get hashCode {
-    return amount.hashCode;
+    return _amount.hashCode;
   }
 
   /// Parse Money from string
@@ -196,7 +194,7 @@ class Money {
     }
 
     if (av.length == 1) {
-      return Money.parse(int.parse(av[0]));
+      return Money(int.parse(av[0]));
     }
 
     final left = int.parse(av[0]);
@@ -207,12 +205,12 @@ class Money {
     final rs =
         (left * _e10 + right * pow(10, _maxDecimalPlaces - decimal.length))
             .round();
-    return Money._raw(rs);
+    return Money.raw(rs);
   }
 
   // immutable value
-  late final int amount;
+  late final int _amount;
   MoneyFormatter _formatter;
 
-  static Money get zero => Money._raw(0);
+  static Money get zero => Money.raw(0);
 }
