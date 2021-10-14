@@ -652,6 +652,12 @@ void main() {
       final m = -Money.zero;
       expect(m.raw, isZero);
     });
+
+    test('Absolute value', () {
+      final positive = Money(1).abs();
+      final negative = Money(-1).abs();
+      expect(positive == negative, isTrue);
+    });
   });
 
   group('Formatter', () {

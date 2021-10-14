@@ -148,6 +148,10 @@ class Money {
     return Money.raw((this._amount / ratio).round());
   }
 
+  Money abs() {
+    return Money.raw(_amount.abs());
+  }
+
   static Money? tryParse(Object other) {
     try {
       if (other is num) return Money(other);
