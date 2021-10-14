@@ -353,7 +353,7 @@ void main() {
     });
   });
 
-  group('Math', () {
+  group('Operators', () {
     group('Zero', () {
       test('Add zero', () {
         final z = Money.zero;
@@ -636,6 +636,21 @@ void main() {
         final m = Money(100);
         expect(() => m / '0', throwsA(isA<Error>()));
       });
+    });
+
+    test('Unary minus positive', () {
+      final m = -Money(1);
+      expect(m.value, -1);
+    });
+
+    test('Unary minus negative', () {
+      final m = -Money(-1);
+      expect(m.value, 1);
+    });
+
+    test('Unary minus zero', () {
+      final m = -Money.zero;
+      expect(m.raw, isZero);
     });
   });
 

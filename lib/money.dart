@@ -128,6 +128,10 @@ class Money {
     return Money.raw(this._amount - m._amount);
   }
 
+  Money operator -() {
+    return Money.raw(-this._amount);
+  }
+
   // You can't multiplicate or divide money on money, so cast to numbers
   Money operator *(Object ratioObject) {
     num ratio = num.parse(ratioObject.toString());
