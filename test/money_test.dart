@@ -8,7 +8,7 @@ void main() {
     test('Const Zero value', () {
       final m = Money.zero;
       expect(m.value, isZero);
-      expect(m.raw, isZero);
+      expect(m.amount, isZero);
       expect(m.toString(), '0.00');
     });
 
@@ -16,13 +16,13 @@ void main() {
       test('Positive', () {
         final m = Money.parse(1);
         expect(m.value, 1.0);
-        expect(m.raw, 10000);
+        expect(m.amount, 10000);
         expect(m.toString(), '1.00');
       });
       test('Negative value', () {
         final m = Money.parse(-1);
         expect(m.value, -1.0);
-        expect(m.raw, -10000);
+        expect(m.amount, -10000);
         expect(m.toString(), '-1.00');
       });
     });
@@ -31,14 +31,14 @@ void main() {
       test('Positive value', () {
         final m = Money.parse(1.0);
         expect(m.value, 1.0);
-        expect(m.raw, 10000);
+        expect(m.amount, 10000);
         expect(m.toString(), '1.00');
       });
 
       test('Negative value', () {
         final m = Money.parse(-1.0);
         expect(m.value, -1.0);
-        expect(m.raw, -10000);
+        expect(m.amount, -10000);
         expect(m.toString(), '-1.00');
       });
 
@@ -57,21 +57,21 @@ void main() {
       test('Value int', () {
         final m = Money.parse('1');
         expect(m.value, 1.0);
-        expect(m.raw, 10000);
+        expect(m.amount, 10000);
         expect(m.toString(), '1.00');
       });
 
       test('Value double', () {
         final m = Money.parse('1.0');
         expect(m.value, 1.0);
-        expect(m.raw, 10000);
+        expect(m.amount, 10000);
         expect(m.toString(), '1.00');
       });
 
       test('Negative value', () {
         final m = Money.parse('-1.0');
         expect(m.value, -1.0);
-        expect(m.raw, -10000);
+        expect(m.amount, -10000);
         expect(m.toString(), '-1.00');
       });
 
@@ -107,18 +107,18 @@ void main() {
         final m = Money.parse('1.0');
         final Money m2 = m;
         expect(m.value, 1.0);
-        expect(m.raw, 10000);
+        expect(m.amount, 10000);
         expect(m2.value, 1.0);
-        expect(m2.raw, 10000);
+        expect(m2.amount, 10000);
       });
 
       test('Other money parse', () {
         final m = Money.parse('1.0');
         final m2 = Money.parse(m);
         expect(m.value, 1.0);
-        expect(m.raw, 10000);
+        expect(m.amount, 10000);
         expect(m2.value, 1.0);
-        expect(m2.raw, 10000);
+        expect(m2.amount, 10000);
       });
 
       test('Invalid object', () {
@@ -360,7 +360,7 @@ void main() {
         final m = Money.parse(100);
         final result = z + m;
         expect(result.value, 100.0);
-        expect(result.raw, 1000000);
+        expect(result.amount, 1000000);
       });
 
       test('Subtract zero', () {
@@ -368,7 +368,7 @@ void main() {
         final m = Money.parse(100);
         final result = m - z;
         expect(result.value, 100.0);
-        expect(result.raw, 1000000);
+        expect(result.amount, 1000000);
       });
 
       test('Subtract from zero', () {
@@ -376,31 +376,31 @@ void main() {
         final m = Money.parse(100);
         final result = z - m;
         expect(result.value, -100.0);
-        expect(result.raw, -1000000);
+        expect(result.amount, -1000000);
       });
 
       test('Add', () {
         final result = Money.zero + 1;
         expect(result.value, 1.0);
-        expect(result.raw, 10000);
+        expect(result.amount, 10000);
       });
 
       test('Subtract', () {
         final result = Money.zero - 1;
         expect(result.value, -1.0);
-        expect(result.raw, -10000);
+        expect(result.amount, -10000);
       });
 
       test('Multiply', () {
         final result = Money.zero * 1;
         expect(result.value, isZero);
-        expect(result.raw, isZero);
+        expect(result.amount, isZero);
       });
 
       test('Divide', () {
         final result = Money.zero / 10;
         expect(result.value, isZero);
-        expect(result.raw, isZero);
+        expect(result.amount, isZero);
       });
     });
 
@@ -409,49 +409,49 @@ void main() {
         final m = Money.parse(100);
         final result = m + 1;
         expect(result.value, 101.00);
-        expect(result.raw, 1010000);
+        expect(result.amount, 1010000);
       });
 
       test('Add negative', () {
         final m = Money.parse(100);
         final result = m + (-1);
         expect(result.value, 99.0);
-        expect(result.raw, 990000);
+        expect(result.amount, 990000);
       });
 
       test('Subtract positive', () {
         final m = Money.parse(100);
         final result = m - 1;
         expect(result.value, 99);
-        expect(result.raw, 990000);
+        expect(result.amount, 990000);
       });
 
       test('Subtract negative', () {
         final m = Money.parse(100);
         final result = m - (-1);
         expect(result.value, 101.00);
-        expect(result.raw, 1010000);
+        expect(result.amount, 1010000);
       });
 
       test('Multiply', () {
         final m = Money.parse(100);
         final result = m * 3;
         expect(result.value, 300.0);
-        expect(result.raw, 3000000);
+        expect(result.amount, 3000000);
       });
 
       test('Multiply by zero', () {
         final m = Money.parse(100);
         final result = m * 0;
         expect(result.value, isZero);
-        expect(result.raw, isZero);
+        expect(result.amount, isZero);
       });
 
       test('Divide', () {
         final m = Money.parse(100);
         final result = m / 10;
         expect(result.value, 10.0);
-        expect(result.raw, 100000);
+        expect(result.amount, 100000);
       });
 
       test('Divide by zero', () {
@@ -465,14 +465,14 @@ void main() {
         final m = Money.parse(100);
         final result = m + 1.01;
         expect(result.value, 101.01);
-        expect(result.raw, 1010100);
+        expect(result.amount, 1010100);
       });
 
       test('Add negative', () {
         final m = Money.parse(100);
         final result = m + (-1.01);
         expect(result.value, 98.99);
-        expect(result.raw, 989900);
+        expect(result.amount, 989900);
       });
 
       test('Add infinity', () {
@@ -491,21 +491,21 @@ void main() {
         final m = Money.parse(100);
         final result = z - m;
         expect(result.value, -100.0);
-        expect(result.raw, -1000000);
+        expect(result.amount, -1000000);
       });
 
       test('Subtract positive', () {
         final m = Money.parse(100);
         final result = m - 1.01;
         expect(result.value, 98.99);
-        expect(result.raw, 989900);
+        expect(result.amount, 989900);
       });
 
       test('Subtract negative', () {
         final m = Money.parse(100);
         final result = m - (-1.01);
         expect(result.value, 101.01);
-        expect(result.raw, 1010100);
+        expect(result.amount, 1010100);
       });
 
       test('Subtract infinity', () {
@@ -523,21 +523,21 @@ void main() {
         final m = Money.parse(100);
         final result = m * 3.1;
         expect(result.value, 310.0);
-        expect(result.raw, 3100000);
+        expect(result.amount, 3100000);
       });
 
       test('Multiply less than 1 ratio', () {
         final m = Money.parse(100);
         final result = m * .1;
         expect(result.value, 10.0);
-        expect(result.raw, 100000);
+        expect(result.amount, 100000);
       });
 
       test('Multiply zero ratio', () {
         final m = Money.parse(100);
         final result = m * 0;
         expect(result.value, isZero);
-        expect(result.raw, isZero);
+        expect(result.amount, isZero);
       });
 
       test('Multiply infinity', () {
@@ -555,14 +555,14 @@ void main() {
         final m = Money.parse(100);
         final result = m / 10.0;
         expect(result.value, 10.0);
-        expect(result.raw, 100000);
+        expect(result.amount, 100000);
       });
 
       test('Divide less than 1 ratio', () {
         final m = Money.parse(100);
         final result = m / 0.1;
         expect(result.value, 1000.0);
-        expect(result.raw, 10000000);
+        expect(result.amount, 10000000);
       });
 
       test('Divide by zero', () {
@@ -587,49 +587,49 @@ void main() {
         final m = Money.parse(100);
         final result = m + '1.01';
         expect(result.value, 101.01);
-        expect(result.raw, 1010100);
+        expect(result.amount, 1010100);
       });
 
       test('Add negative', () {
         final m = Money.parse(100);
         final result = m + '-10';
         expect(result.value, 90.0);
-        expect(result.raw, 900000);
+        expect(result.amount, 900000);
       });
 
       test('Subtract positive', () {
         final m = Money.parse(100);
         final result = m - '19';
         expect(result.value, 81.0);
-        expect(result.raw, 810000);
+        expect(result.amount, 810000);
       });
 
       test('Subtract negative', () {
         final m = Money.parse(100);
         final result = m - '-1.01';
         expect(result.value, 100.99);
-        expect(result.raw, 1009900);
+        expect(result.amount, 1009900);
       });
 
       test('Multiply', () {
         final m = Money.parse(100);
         final result = m * '-3.1';
         expect(result.value, -310.0);
-        expect(result.raw, -3100000);
+        expect(result.amount, -3100000);
       });
 
       test('Multiply by zero', () {
         final m = Money.parse(100);
         final result = m * '0';
         expect(result.value, isZero);
-        expect(result.raw, isZero);
+        expect(result.amount, isZero);
       });
 
       test('Divide', () {
         final m = Money.parse(100);
         final result = m / 10;
         expect(result.value, 10.0);
-        expect(result.raw, 100000);
+        expect(result.amount, 100000);
       });
 
       test('Divide by zero', () {

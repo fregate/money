@@ -18,7 +18,7 @@ class Money {
   static const _e10 = 10000;
 
   Money(Money m, {MoneyFormatter? formatter})
-      : _amount = m._amount,
+      : amount = m.amount,
         _formatter = formatter ??
             MoneyFormatter("#"); // TODO parse format from locale formatter for numbers and currency
 
@@ -33,22 +33,22 @@ class Money {
         throw NanDoubleParseError(
             "value", "${value.runtimeType}: ${value.toString()}");
 
-      _amount = (value * _e10).round();
+      amount = (value * _e10).round();
       return;
     }
 
     if (value is int && value.isFinite && !value.isNaN) {
-      _amount = value.toInt() * _e10;
+      amount = value.toInt() * _e10;
       return;
     }
 
     if (value is String) {
-      _amount = _parse(value)._amount;
+      amount = _parse(value).amount;
       return;
     }
 
     if (value is Money) {
-      _amount = value._amount;
+      amount = value.amount;
       return;
     }
 
@@ -56,8 +56,8 @@ class Money {
         "invalid value ${value.runtimeType}: ${value.toString()}");
   }
 
-  Money._raw(int amount, {MoneyFormatter? formatter})
-      : _amount = amount,
+  Money._raw(int value, {MoneyFormatter? formatter})
+      : amount = value,
         _formatter = formatter ?? MoneyFormatter("#");
 
   /// Compares this to `other`.
@@ -67,7 +67,7 @@ class Money {
   int compareTo(Object other) {
     try {
       final m = Money.parse(other);
-      return _amount - m._amount;
+      return amount - m.amount;
     } on InfiniteDoubleParseError catch (e) {
       return e.invalidValue > 0 ? -1 : 1;
     }
@@ -77,7 +77,7 @@ class Money {
   bool operator ==(Object other) {
     try {
       final m = Money.parse(other);
-      return m._amount == _amount;
+      return m.amount == amount;
     } on InfiniteDoubleParseError {
       return false;
     } on NanDoubleParseError {
@@ -88,7 +88,7 @@ class Money {
   bool operator >(Object other) {
     try {
       final m = Money.parse(other);
-      return _amount > m._amount;
+      return amount > m.amount;
     } on InfiniteDoubleParseError catch (e) {
       return e.invalidValue.isNegative;
     }
@@ -97,7 +97,7 @@ class Money {
   bool operator >=(Object other) {
     try {
       final m = Money.parse(other);
-      return _amount >= m._amount;
+      return amount >= m.amount;
     } on InfiniteDoubleParseError catch (e) {
       return e.invalidValue.isNegative;
     }
@@ -106,7 +106,7 @@ class Money {
   bool operator <(Object other) {
     try {
       final m = Money.parse(other);
-      return _amount < m._amount;
+      return amount < m.amount;
     } on InfiniteDoubleParseError catch (e) {
       return !e.invalidValue.isNegative;
     }
@@ -115,7 +115,7 @@ class Money {
   bool operator <=(Object other) {
     try {
       final m = Money.parse(other);
-      return _amount <= m._amount;
+      return amount <= m.amount;
     } on InfiniteDoubleParseError catch (e) {
       return !e.invalidValue.isNegative;
     }
@@ -123,12 +123,12 @@ class Money {
 
   Money operator +(Object other) {
     final m = Money.parse(other);
-    return Money._raw(this._amount + m._amount);
+    return Money._raw(this.amount + m.amount);
   }
 
   Money operator -(Object other) {
     final m = Money.parse(other);
-    return Money._raw(this._amount - m._amount);
+    return Money._raw(this.amount - m.amount);
   }
 
   // You can't multiplicate or divide money on money, so cast to numbers
@@ -136,7 +136,7 @@ class Money {
     num ratio = num.parse(ratioObject.toString());
     if (ratio.isNaN) throw NanDoubleParseError("ratioObject");
     if (ratio.isInfinite) throw InfiniteDoubleParseError(ratio, "ratioObject");
-    return Money._raw((this._amount * ratio).round());
+    return Money._raw((this.amount * ratio).round());
   }
 
   Money operator /(Object ratioObject) {
@@ -144,7 +144,7 @@ class Money {
     if (ratio == 0) throw ArgumentError("try to divide by zero");
     if (ratio.isNaN) throw NanDoubleParseError("ratioObject");
     if (ratio.isInfinite) throw InfiniteDoubleParseError(ratio, "ratioObject");
-    return Money._raw((this._amount / ratio).round());
+    return Money._raw((this.amount / ratio).round());
   }
 
   static Money? tryParse(Object other) {
@@ -167,13 +167,12 @@ class Money {
     return null;
   }
 
-  double get value => _amount.toDouble() / _e10;
-  int get raw => _amount;
+  double get value => amount.toDouble() / _e10;
 
   set formatter(MoneyFormatter formatter) => _formatter = formatter;
 
-  int get _integral => _amount ~/ _e10;
-  int get _decimal => _amount.remainder(_e10).abs();
+  int get _integral => amount ~/ _e10;
+  int get _decimal => amount.remainder(_e10).abs();
 
   @override
   String toString() {
@@ -182,7 +181,7 @@ class Money {
 
   @override
   int get hashCode {
-    return _amount.hashCode;
+    return amount.hashCode;
   }
 
   /// Parse Money from string
@@ -212,7 +211,7 @@ class Money {
   }
 
   // immutable value
-  late final int _amount;
+  late final int amount;
   MoneyFormatter _formatter;
 
   static Money get zero => Money._raw(0);
