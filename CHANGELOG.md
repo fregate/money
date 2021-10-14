@@ -4,4 +4,4 @@ Initial release
 * Creation
 * Compare
 * Math (add, subtract, multiply, divide)
-* Get as String and double
+* Get as String (MoneyFormatter), double (4 decimal places precision) and raw (eg serialization)
