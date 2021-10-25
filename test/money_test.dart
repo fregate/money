@@ -75,6 +75,13 @@ void main() {
         expect(m.toString(), '-1.00');
       });
 
+      test('Negative value #2', () {
+        final m = Money('-1.9');
+        expect(m.value, -1.9);
+        expect(m.raw, -19000);
+        expect(m.toString(), '-1.90');
+      });
+
       test('Invalid string value 1', () {
         expect(() => Money('a'), throwsA(isA<FormatException>()));
       });
@@ -607,8 +614,8 @@ void main() {
       test('Subtract negative', () {
         final m = Money(100);
         final result = m - '-1.01';
-        expect(result.value, 100.99);
-        expect(result.raw, 1009900);
+        expect(result.value, 101.01);
+        expect(result.raw, 1010100);
       });
 
       test('Multiply', () {

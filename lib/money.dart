@@ -8,8 +8,7 @@ class InfiniteDoubleParseError extends ArgumentError {
 }
 
 class NanDoubleParseError extends ArgumentError {
-  NanDoubleParseError([String name = "", String message = ""])
-      : super.value(double.nan, name, message);
+  NanDoubleParseError([String name = "", String message = ""]) : super.value(double.nan, name, message);
 }
 
 class Money {
@@ -23,16 +22,12 @@ class Money {
         _formatter = formatter ??
             MoneyFormatter("#"); // TODO parse format from locale formatter for numbers and currency
 
-  Money(Object value, {MoneyFormatter? formatter})
-      : _formatter = formatter ?? MoneyFormatter("#") {
+  Money(Object value, {MoneyFormatter? formatter}) : _formatter = formatter ?? MoneyFormatter("#") {
     if (value is double) {
       if (value.isInfinite)
-        throw InfiniteDoubleParseError(
-            value, "value", "${value.runtimeType}: ${value.toString()}");
+        throw InfiniteDoubleParseError(value, "value", "${value.runtimeType}: ${value.toString()}");
 
-      if (value.isNaN)
-        throw NanDoubleParseError(
-            "value", "${value.runtimeType}: ${value.toString()}");
+      if (value.isNaN) throw NanDoubleParseError("value", "${value.runtimeType}: ${value.toString()}");
 
       _amount = (value * _e10).round();
       return;
@@ -53,8 +48,7 @@ class Money {
       return;
     }
 
-    throw FormatException(
-        "invalid value ${value.runtimeType}: ${value.toString()}");
+    throw FormatException("invalid value ${value.runtimeType}: ${value.toString()}");
   }
 
   /// Compares this to `other`.
@@ -173,11 +167,13 @@ class Money {
   }
 
   double get value => _amount.toDouble() / _e10;
+
   int get raw => _amount;
 
   set formatter(MoneyFormatter formatter) => _formatter = formatter;
 
   int get _integral => _amount ~/ _e10;
+
   int get _decimal => _amount.remainder(_e10).abs();
 
   @override
@@ -206,14 +202,13 @@ class Money {
     }
 
     final left = int.parse(av[0]);
+    final sign = left.sign;
     final decimal = av[1].substring(0, min(_maxDecimalPlaces, av[1].length));
     final right = int.parse(decimal); // rounding?
-    if (right < 0) throw FormatException("invalid string $value}");
+    if (right < 0) throw FormatException("invalid string $value");
 
-    final rs =
-        (left * _e10 + right * pow(10, _maxDecimalPlaces - decimal.length))
-            .round();
-    return Money.raw(rs);
+    final rs = (left.abs() * _e10 + right * pow(10, _maxDecimalPlaces - decimal.length)).round();
+    return Money.raw(sign * rs);
   }
 
   // immutable value
